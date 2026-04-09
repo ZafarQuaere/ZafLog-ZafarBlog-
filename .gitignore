@@ -1,8 +1,7 @@
-# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
-
-# dependencies
-/node_modules
-/.pnp
+# --- Dependencies ---
+node_modules/
+.pnp
+.pnp.js
 .pnp.*
 .yarn/*
 !.yarn/patches
@@ -10,32 +9,70 @@
 !.yarn/releases
 !.yarn/versions
 
-# testing
-/coverage
+# --- Next.js / build ---
+.next/
+out/
+build/
+dist/
+.vercel
+.turbo
+*.tsbuildinfo
 
-# next.js
-/.next/
-/out/
+# Next.js generates this; regenerated on install
+next-env.d.ts
 
-# production
-/build
+# --- Environment & secrets ---
+# Track `.env.example` only; never commit real env files
+.env*
+!.env.example
 
-# misc
-.DS_Store
-*.pem
+# --- Firebase / GCP ---
+.firebaserc.local
+*-firebase-adminsdk-*.json
+**/serviceAccount*.json
+.firebase/
+firebase-debug.log
+firebase-debug.*.log
+*-debug.log
 
-# debug
+# --- Testing & coverage ---
+coverage/
+.nyc_output/
+
+# --- Logs ---
+logs/
+*.log
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
 
-# env files (can opt-in for committing if needed)
-.env*
+# --- OS ---
+.DS_Store
+.DS_Store?
+._*
+Thumbs.db
+ehthumbs.db
+Desktop.ini
 
-# vercel
-.vercel
+# --- IDE / editors ---
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.swp
+*.swo
+*~
 
-# typescript
-*.tsbuildinfo
-next-env.d.ts
+# --- Certificates ---
+*.pem
+*.p12
+
+# --- Local agent / IDE tooling (not part of the app) ---
+.agents/
+.claude/
+skills-lock.json
+
+# --- Misc ---
+.eslintcache

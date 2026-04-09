@@ -1,36 +1,47 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Blog website
 
-## Getting Started
+Next.js blog platform with Firebase (Firestore, Auth, Storage), Tailwind CSS, and admin CMS. See [blog-platform-spec.md](./blog-platform-spec.md) for the product spec.
 
-First, run the development server:
+## Quick start
 
 ```bash
+npm install
+cp .env.example .env.local
+# Fill in Firebase + Resend values
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000). Admin: [http://localhost:3000/admin/login](http://localhost:3000/admin/login).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Docs
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+- [docs/FIREBASE_SETUP.md](./docs/FIREBASE_SETUP.md) — Firebase console, rules, indexes, service account
+- [docs/BLOG_PLATFORM_TRD.md](./docs/BLOG_PLATFORM_TRD.md) — technical requirements summary
+- [IMPLEMENTATION_CHECKLIST.md](./IMPLEMENTATION_CHECKLIST.md) — delivery checklist
 
-## Learn More
+## Environment
 
-To learn more about Next.js, take a look at the following resources:
+| Variable | Notes |
+|----------|--------|
+| `NEXT_PUBLIC_FIREBASE_*` | Web app config from Firebase Console |
+| `NEXT_PUBLIC_SITE_URL` | Canonical site URL (SEO, sitemap, share links) |
+| `FIREBASE_SERVICE_ACCOUNT_KEY` | JSON string — optional but recommended for public ISR/SSG data |
+| `EMAIL_API_KEY` | Resend API key |
+| `RESEND_FROM_EMAIL` | Verified sender in Resend |
+| `CONTACT_EMAIL` | Fallback inbox if Firestore recipient not set |
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Scripts
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+- `npm run dev` — development server
+- `npm run build` — production build
+- `npm run start` — run production build locally
+- `npm run lint` — ESLint
 
-## Deploy on Vercel
+## Deploy (Vercel)
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+1. Import repo, set the same env vars as `.env.example`.
+2. Deploy; add `FIREBASE_SERVICE_ACCOUNT_KEY` for best SEO (static paths for posts).
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Firestore rules
+
+Deploy [firestore.rules](./firestore.rules) and [storage.rules](./storage.rules) from the Firebase Console or Firebase CLI.
