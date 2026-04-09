@@ -71,10 +71,10 @@ export default function AdminLoginPage() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-100 px-4 dark:bg-zinc-950">
-      <div className="w-full max-w-md rounded-2xl border border-zinc-200 bg-white p-8 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
-        <h1 className="text-2xl font-bold text-zinc-900 dark:text-zinc-50">Admin login</h1>
-        <p className="mt-1 text-sm text-zinc-500">Sign in to manage your blog.</p>
+    <div className="flex min-h-screen items-center justify-center bg-background px-4">
+      <div className="w-full max-w-md rounded-2xl border border-border bg-surface p-8 shadow-lg shadow-zinc-200/40 dark:shadow-black/40">
+        <h1 className="text-2xl font-bold tracking-tight text-foreground">Admin login</h1>
+        <p className="mt-1 text-sm text-muted">Sign in to manage your blog.</p>
         <form onSubmit={onSubmit} className="mt-6 flex flex-col gap-4">
           <div>
             <label className="mb-1 block text-sm font-medium">Email</label>
@@ -98,8 +98,8 @@ export default function AdminLoginPage() {
             Forgot password?
           </Button>
         </form>
-        <p className="mt-6 text-center text-sm text-zinc-500">
-          <Link href="/" className="underline">
+        <p className="mt-6 text-center text-sm text-muted">
+          <Link href="/" className="font-medium text-foreground underline-offset-4 hover:underline">
             Back to site
           </Link>
         </p>

@@ -9,9 +9,9 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
     return <div className="min-h-screen">{children}</div>;
   }
   return (
-    <div className="flex min-h-screen">
+    <div className="flex min-h-screen bg-zinc-100/90 text-foreground dark:bg-zinc-950">
       <AdminNav />
-      <div className="flex-1 overflow-auto p-6">{children}</div>
+      <div className="flex-1 overflow-auto p-6 md:p-8">{children}</div>
     </div>
   );
 }

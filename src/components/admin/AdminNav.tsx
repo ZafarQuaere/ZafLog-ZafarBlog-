@@ -20,33 +20,33 @@ export function AdminNav() {
   const pathname = usePathname();
 
   return (
-    <aside className="flex w-56 shrink-0 flex-col border-r border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-900">
-      <div className="border-b border-zinc-200 p-4 dark:border-zinc-800">
-        <Link href="/admin" className="text-lg font-semibold text-zinc-900 dark:text-zinc-50">
+    <aside className="flex w-56 shrink-0 flex-col border-r border-zinc-200/80 bg-zinc-900 text-zinc-100 dark:border-zinc-800 dark:bg-zinc-950">
+      <div className="border-b border-zinc-700/50 p-5">
+        <Link href="/admin" className="text-lg font-semibold tracking-tight text-white">
           Admin
         </Link>
-        <p className="text-xs text-zinc-500">Blog CMS</p>
+        <p className="mt-0.5 text-xs text-zinc-400">Blog CMS</p>
       </div>
-      <nav className="flex flex-1 flex-col gap-1 p-2">
+      <nav className="flex flex-1 flex-col gap-0.5 p-2">
         {links.map((l) => (
           <Link
             key={l.href}
             href={l.href}
             className={clsx(
-              "rounded-lg px-3 py-2 text-sm font-medium",
+              "rounded-lg px-3 py-2.5 text-sm font-medium transition",
               pathname === l.href
-                ? "bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900"
-                : "text-zinc-700 hover:bg-zinc-100 dark:text-zinc-200 dark:hover:bg-zinc-800",
+                ? "bg-white text-zinc-900 shadow-sm dark:bg-zinc-100 dark:text-zinc-900"
+                : "text-zinc-300 hover:bg-zinc-800 hover:text-white",
             )}
           >
             {l.label}
           </Link>
         ))}
       </nav>
-      <div className="border-t border-zinc-200 p-2 dark:border-zinc-800">
+      <div className="border-t border-zinc-700/50 p-2">
         <Link
           href="/"
-          className="mb-2 block rounded-lg px-3 py-2 text-sm text-zinc-600 hover:bg-zinc-100 dark:text-zinc-400 dark:hover:bg-zinc-800"
+          className="mb-2 block rounded-lg px-3 py-2 text-sm text-zinc-400 transition hover:bg-zinc-800 hover:text-white"
         >
           View site
         </Link>

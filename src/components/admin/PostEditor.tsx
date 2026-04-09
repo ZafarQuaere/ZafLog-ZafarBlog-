@@ -19,6 +19,7 @@ import { getFirebaseAuth, getFirebaseDb, getFirebaseStorage } from "@/lib/fireba
 import { slugifyTitle } from "@/utils/slugify";
 import { excerptFromContent } from "@/utils/truncate";
 import { MarkdownEditor } from "@/components/admin/MarkdownEditor";
+import { formSelectClass } from "@/lib/form-classes";
 import { FeaturedImageField } from "@/components/admin/FeaturedImageField";
 import { Input } from "@/components/common/Input";
 import { Button } from "@/components/common/Button";
@@ -232,7 +233,7 @@ export function PostEditor({ postId: initialPostId }: { postId?: string }) {
   return (
     <div className="mx-auto max-w-5xl space-y-8">
       <div className="flex flex-wrap items-center justify-between gap-4">
-        <h1 className="text-2xl font-bold text-zinc-900 dark:text-zinc-50">
+        <h1 className="text-2xl font-bold tracking-tight text-foreground">
           {initialPostId ? "Edit post" : "New post"}
         </h1>
         <div className="flex flex-wrap gap-2">
@@ -250,7 +251,7 @@ export function PostEditor({ postId: initialPostId }: { postId?: string }) {
         </div>
       </div>
 
-      {message ? <p className="text-sm text-zinc-600 dark:text-zinc-400">{message}</p> : null}
+      {message ? <p className="text-sm font-medium text-muted">{message}</p> : null}
 
       <div className="grid gap-6 lg:grid-cols-2">
         <div className="space-y-4">
@@ -270,11 +271,7 @@ export function PostEditor({ postId: initialPostId }: { postId?: string }) {
           </div>
           <div>
             <label className="mb-1 block text-sm font-medium">Category</label>
-            <select
-              className="w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm dark:border-zinc-600 dark:bg-zinc-950"
-              value={category}
-              onChange={(e) => setCategory(e.target.value)}
-            >
+            <select className={formSelectClass} value={category} onChange={(e) => setCategory(e.target.value)}>
               <option value="">Select…</option>
               {categories.map((c) => (
                 <option key={c.id} value={c.id}>
@@ -286,7 +283,7 @@ export function PostEditor({ postId: initialPostId }: { postId?: string }) {
           <div>
             <label className="mb-1 block text-sm font-medium">Status</label>
             <select
-              className="w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm dark:border-zinc-600 dark:bg-zinc-950"
+              className={formSelectClass}
               value={status}
               onChange={(e) => setStatus(e.target.value as Status)}
             >

@@ -1,7 +1,11 @@
 import type { Metadata } from "next";
 import { PostCard } from "@/components/blog/PostCard";
 import { Pagination } from "@/components/common/Pagination";
+import { formSelectClass } from "@/lib/form-classes";
 import { getAllCategories, searchPublishedPosts } from "@/lib/posts-server";
+
+const searchInputClass =
+  "w-full rounded-lg border border-zinc-300 bg-white px-3 py-2.5 text-sm text-zinc-900 shadow-sm outline-none ring-zinc-400 focus:ring-2 dark:border-zinc-600 dark:bg-zinc-900 dark:text-zinc-50";
 
 export const revalidate = 0;
 
@@ -35,23 +39,14 @@ export default async function SearchPage({
 
   return (
     <div>
-      <h1 className="mb-2 text-3xl font-bold text-zinc-900 dark:text-zinc-50">Search</h1>
-      <p className="mb-8 text-zinc-600 dark:text-zinc-400">
+      <h1 className="mb-2 text-3xl font-bold tracking-tight text-foreground">Search</h1>
+      <p className="mb-8 text-muted">
         {q ? `Results for “${q}”` : "Enter a search query in the header."}
       </p>
 
       <form className="mb-8 flex max-w-xl flex-col gap-3 sm:flex-row" action="/search" method="get">
-        <input
-          name="q"
-          defaultValue={q}
-          placeholder="Search posts…"
-          className="w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm dark:border-zinc-600 dark:bg-zinc-950"
-        />
-        <select
-          name="category"
-          defaultValue={categoryFilter ?? ""}
-          className="rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm dark:border-zinc-600 dark:bg-zinc-950"
-        >
+        <input name="q" defaultValue={q} placeholder="Search posts…" className={searchInputClass} />
+        <select name="category" defaultValue={categoryFilter ?? ""} className={`${formSelectClass} w-full sm:w-auto`}>
           <option value="">All categories</option>
           {categories.map((c) => (
             <option key={c.id} value={c.id}>

@@ -7,7 +7,8 @@ import { getAllCategories, getPublishedPostsPage } from "@/lib/posts-server";
 
 const PAGE_SIZE = 9;
 
-export const revalidate = 3600;
+/** Always fetch fresh post lists so new publishes and edits show up without long ISR delays. */
+export const revalidate = 0;
 
 export default async function HomePage({
   searchParams,

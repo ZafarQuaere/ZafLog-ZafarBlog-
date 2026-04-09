@@ -55,7 +55,8 @@ export async function getPublishedPostsPage(params: {
     const snap = await base.offset(params.pageIndex * params.pageSize).limit(params.pageSize).get();
     const posts = snap.docs.map((d) => mapPostDoc(d.id, d.data()));
     return { posts, total };
-  } catch {
+  } catch (e) {
+    console.error("[posts-server] getPublishedPostsPage failed:", e);
     return { posts: [], total: 0 };
   }
 }
@@ -129,7 +130,8 @@ export async function getPostsByCategorySlug(
     const snap = await base.offset(pageIndex * pageSize).limit(pageSize).get();
     const posts = snap.docs.map((d) => mapPostDoc(d.id, d.data()));
     return { posts, total, category };
-  } catch {
+  } catch (e) {
+    console.error("[posts-server] getPostsByCategorySlug failed:", e);
     return { posts: [], total: 0, category: null };
   }
 }

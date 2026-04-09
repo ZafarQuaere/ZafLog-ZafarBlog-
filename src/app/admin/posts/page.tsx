@@ -9,6 +9,7 @@ import { getFirebaseDb, getFirebaseStorage } from "@/lib/firebase";
 import { Input } from "@/components/common/Input";
 import { Button } from "@/components/common/Button";
 import { formatPostDate } from "@/utils/formatDate";
+import { formSelectClass } from "@/lib/form-classes";
 
 type Row = {
   id: string;
@@ -132,8 +133,8 @@ export default function AdminPostsPage() {
     <div className="space-y-6">
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-zinc-900 dark:text-zinc-50">Posts</h1>
-          <p className="text-sm text-zinc-500">Manage, filter, and publish content.</p>
+          <h1 className="text-2xl font-bold tracking-tight text-foreground">Posts</h1>
+          <p className="text-sm text-muted">Manage, filter, and publish content.</p>
         </div>
         <Link href="/admin/posts/new">
           <Button type="button">New post</Button>
@@ -142,7 +143,7 @@ export default function AdminPostsPage() {
 
       <div className="flex flex-wrap gap-3">
         <select
-          className="rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm dark:border-zinc-600 dark:bg-zinc-950"
+          className={`${formSelectClass} w-auto min-w-[11rem]`}
           value={statusFilter}
           onChange={(e) => {
             setStatusFilter(e.target.value as typeof statusFilter);
@@ -154,7 +155,7 @@ export default function AdminPostsPage() {
           <option value="draft">Draft</option>
         </select>
         <select
-          className="rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm dark:border-zinc-600 dark:bg-zinc-950"
+          className={`${formSelectClass} w-auto min-w-[12rem]`}
           value={categoryFilter}
           onChange={(e) => {
             setCategoryFilter(e.target.value);

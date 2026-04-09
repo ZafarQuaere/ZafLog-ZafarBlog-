@@ -24,7 +24,7 @@ export default async function SiteLayout({ children }: { children: React.ReactNo
   return (
     <div className="flex min-h-full flex-col">
       <SiteHeader settings={settings} />
-      <main className="mx-auto flex w-full max-w-6xl flex-1 flex-col px-4 py-8">{children}</main>
+      <main className="mx-auto flex w-full max-w-6xl flex-1 flex-col px-4 py-10 text-foreground">{children}</main>
       <SiteFooter settings={settings} />
     </div>
   );

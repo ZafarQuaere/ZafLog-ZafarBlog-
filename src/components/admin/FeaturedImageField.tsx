@@ -50,7 +50,7 @@ export function FeaturedImageField({
 
   return (
     <div className="space-y-3">
-      <p className="text-sm font-medium text-zinc-800 dark:text-zinc-100">Featured image</p>
+      <p className="text-sm font-semibold text-foreground">Featured image</p>
       <div
         className={`relative flex min-h-[180px] cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed p-4 transition ${
           drag ? "border-zinc-900 bg-zinc-50 dark:border-zinc-100 dark:bg-zinc-900" : "border-zinc-300 dark:border-zinc-600"

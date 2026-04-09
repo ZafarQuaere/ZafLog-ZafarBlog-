@@ -18,13 +18,14 @@ export function SearchBar({ placeholder = "Search posts…" }: { placeholder?: s
   }
 
   return (
-    <form onSubmit={onSubmit} className="flex w-full max-w-md gap-2">
+    <form onSubmit={onSubmit} className="flex w-full max-w-md gap-2 rounded-xl border border-zinc-200/90 bg-zinc-50/80 p-1 dark:border-zinc-600/80 dark:bg-zinc-900/50">
       <Input
         name="q"
         value={q}
         onChange={(e) => setQ(e.target.value)}
         placeholder={placeholder}
         aria-label="Search"
+        className="flex-1 border-0 bg-transparent shadow-none ring-0 focus:ring-0 dark:bg-transparent"
       />
       <Button type="submit" variant="secondary">
         Search

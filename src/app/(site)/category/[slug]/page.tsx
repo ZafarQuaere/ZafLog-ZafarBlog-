@@ -6,7 +6,7 @@ import { getAllCategories, getPostsByCategorySlug } from "@/lib/posts-server";
 
 const PAGE_SIZE = 9;
 
-export const revalidate = 3600;
+export const revalidate = 0;
 
 export async function generateMetadata({
   params,

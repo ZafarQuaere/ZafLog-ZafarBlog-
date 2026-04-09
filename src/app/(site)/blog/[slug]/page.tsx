@@ -15,7 +15,7 @@ import {
 import { formatPostDate } from "@/utils/formatDate";
 import { estimateReadTimeMinutes } from "@/utils/readTime";
 
-export const revalidate = 3600;
+export const revalidate = 0;
 
 export async function generateStaticParams() {
   const { getAllPublishedSlugs } = await import("@/lib/posts-server");
@@ -97,38 +97,45 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
   return (
     <article>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
-      <nav className="mb-6 text-sm text-zinc-500 dark:text-zinc-400" aria-label="Breadcrumb">
+      <nav className="mb-6 text-sm text-muted" aria-label="Breadcrumb">
         <ol className="flex flex-wrap gap-2">
           <li>
-            <Link href="/" className="hover:text-zinc-800 dark:hover:text-zinc-200">
+            <Link href="/" className="font-medium text-foreground/80 underline-offset-4 hover:text-foreground hover:underline">
               Home
             </Link>
           </li>
-          <li aria-hidden>/</li>
+          <li aria-hidden className="text-muted/80">
+            /
+          </li>
           {category ? (
             <>
               <li>
-                <Link href={`/category/${category.slug}`} className="hover:text-zinc-800 dark:hover:text-zinc-200">
+                <Link
+                  href={`/category/${category.slug}`}
+                  className="font-medium text-foreground/80 underline-offset-4 hover:text-foreground hover:underline"
+                >
                   {category.name}
                 </Link>
               </li>
-              <li aria-hidden>/</li>
+              <li aria-hidden className="text-muted/80">
+                /
+              </li>
             </>
           ) : null}
-          <li className="text-zinc-800 dark:text-zinc-200">{post.title}</li>
+          <li className="font-medium text-foreground">{post.title}</li>
         </ol>
       </nav>
 
-      <header className="mb-8">
+      <header className="mb-10">
         <div className="mb-4 flex flex-wrap items-center gap-3">
           {category ? <CategoryBadge name={category.name} slug={category.slug} /> : null}
-          <span className="text-sm text-zinc-500 dark:text-zinc-400">
+          <span className="text-sm text-muted">
             {formatPostDate(post.publishedAt)} · {readTime} min read
           </span>
         </div>
-        <h1 className="text-3xl font-bold tracking-tight text-zinc-900 dark:text-zinc-50 md:text-4xl">{post.title}</h1>
-        <p className="mt-2 text-zinc-600 dark:text-zinc-300">
-          By <span className="font-medium text-zinc-900 dark:text-zinc-100">{post.author.name}</span>
+        <h1 className="text-3xl font-bold tracking-tight text-foreground md:text-4xl md:leading-tight">{post.title}</h1>
+        <p className="mt-3 text-muted">
+          By <span className="font-semibold text-foreground">{post.author.name}</span>
         </p>
       </header>
 
