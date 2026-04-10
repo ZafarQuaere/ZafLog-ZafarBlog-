@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { connection } from "next/server";
 import { PostCard } from "@/components/blog/PostCard";
 import { Pagination } from "@/components/common/Pagination";
 import { formSelectClass } from "@/lib/form-classes";
@@ -20,6 +21,7 @@ export default async function SearchPage({
 }: {
   searchParams: Promise<{ q?: string; page?: string; category?: string }>;
 }) {
+  await connection();
   const sp = await searchParams;
   const q = (sp.q ?? "").trim();
   const page = Math.max(0, Number(sp.page ?? "0") || 0);

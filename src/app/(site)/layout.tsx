@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { connection } from "next/server";
 import { SiteFooter } from "@/components/layout/SiteFooter";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { getSiteSettingsServer } from "@/lib/posts-server";
@@ -18,6 +19,7 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default async function SiteLayout({ children }: { children: React.ReactNode }) {
+  await connection();
   const raw = await getSiteSettingsServer();
   const settings = normalizeSettings(raw);
 

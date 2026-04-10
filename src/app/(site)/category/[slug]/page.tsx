@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { connection } from "next/server";
 import { notFound } from "next/navigation";
 import { PostCard } from "@/components/blog/PostCard";
 import { Pagination } from "@/components/common/Pagination";
@@ -30,6 +31,7 @@ export default async function CategoryPage({
   params: Promise<{ slug: string }>;
   searchParams: Promise<{ page?: string }>;
 }) {
+  await connection();
   const { slug } = await params;
   const sp = await searchParams;
   const page = Math.max(0, Number(sp.page ?? "0") || 0);

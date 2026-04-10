@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
+import { connection } from "next/server";
 import { notFound } from "next/navigation";
 import { PostContent } from "@/components/blog/PostContent";
 import { RelatedPosts } from "@/components/blog/RelatedPosts";
@@ -34,6 +35,7 @@ export async function generateMetadata({
   const { slug } = await params;
   const post = await getPostBySlugPublic(slug);
   if (!post) return { title: "Not found" };
+  const publishedDate = post.publishedAt ?? post.updatedAt ?? post.createdAt;
   const url = `${process.env.NEXT_PUBLIC_SITE_URL ?? ""}/blog/${post.slug}`;
   return {
     title: post.title,
@@ -43,7 +45,7 @@ export async function generateMetadata({
       description: post.excerpt,
       type: "article",
       url,
-      publishedTime: post.publishedAt ?? undefined,
+      publishedTime: publishedDate ?? undefined,
       images: post.featuredImage?.url ? [{ url: post.featuredImage.url }] : undefined,
     },
     twitter: {
@@ -56,6 +58,7 @@ export async function generateMetadata({
 }
 
 export default async function BlogPostPage({ params }: { params: Promise<{ slug: string }> }) {
+  await connection();
   const { slug } = await params;
   const post = await getPostBySlugPublic(slug);
   if (!post) notFound();
@@ -78,6 +81,7 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
   }
 
   const readTime = estimateReadTimeMinutes(post.content);
+  const publishedDate = post.publishedAt ?? post.updatedAt ?? post.createdAt;
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "";
   const shareUrl = `${siteUrl}/blog/${post.slug}`;
 
@@ -86,7 +90,7 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
     "@type": "BlogPosting",
     headline: post.title,
     image: post.featuredImage?.url ? [post.featuredImage.url] : undefined,
-    datePublished: post.publishedAt,
+    datePublished: publishedDate,
     dateModified: post.updatedAt,
     author: {
       "@type": "Person",
@@ -130,7 +134,7 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
         <div className="mb-4 flex flex-wrap items-center gap-3">
           {category ? <CategoryBadge name={category.name} slug={category.slug} /> : null}
           <span className="text-sm text-muted">
-            {formatPostDate(post.publishedAt)} · {readTime} min read
+            {formatPostDate(publishedDate)} · {readTime} min read
           </span>
         </div>
         <h1 className="text-3xl font-bold tracking-tight text-foreground md:text-4xl md:leading-tight">{post.title}</h1>

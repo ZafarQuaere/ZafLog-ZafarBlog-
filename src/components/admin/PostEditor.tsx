@@ -16,10 +16,10 @@ import {
 } from "firebase/firestore";
 import { deleteObject, getDownloadURL, ref, uploadBytes } from "firebase/storage";
 import { getFirebaseAuth, getFirebaseDb, getFirebaseStorage } from "@/lib/firebase";
+import { formSelectClass } from "@/lib/form-classes";
 import { slugifyTitle } from "@/utils/slugify";
 import { excerptFromContent } from "@/utils/truncate";
 import { MarkdownEditor } from "@/components/admin/MarkdownEditor";
-import { formSelectClass } from "@/lib/form-classes";
 import { FeaturedImageField } from "@/components/admin/FeaturedImageField";
 import { Input } from "@/components/common/Input";
 import { Button } from "@/components/common/Button";
@@ -27,6 +27,24 @@ import { Modal } from "@/components/common/Modal";
 import imageCompression from "browser-image-compression";
 
 type Status = "draft" | "published";
+
+async function revalidatePostViews(payload: {
+  slug?: string;
+  previousSlug?: string;
+  categorySlug?: string;
+  previousCategorySlug?: string;
+}) {
+  try {
+    await fetch("/api/revalidate/posts", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
+  } catch {
+    // Public routes are rendered request-time, so a failed revalidation request
+    // should not block the editor flow.
+  }
+}
 
 export function PostEditor({ postId: initialPostId }: { postId?: string }) {
   const router = useRouter();
@@ -42,33 +60,49 @@ export function PostEditor({ postId: initialPostId }: { postId?: string }) {
   const [content, setContent] = useState("");
   const [category, setCategory] = useState("");
   const [categories, setCategories] = useState<{ id: string; name: string }[]>([]);
+  const [categorySlugMap, setCategorySlugMap] = useState<Record<string, string>>({});
   const [featured, setFeatured] = useState({ url: "", alt: "", storagePath: "" });
-  const [status, setStatus] = useState<Status>("draft");
+  const [savedStatus, setSavedStatus] = useState<Status>("draft");
   const [loading, setLoading] = useState(!!initialPostId);
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState("");
   const [confirmOpen, setConfirmOpen] = useState(false);
   const inlineInputRef = useRef<HTMLInputElement>(null);
   const savingRef = useRef(false);
+  /**
+   * Tracks whether the post data has finished loading.
+   * Autosave MUST NOT fire until this is true — otherwise it races with the
+   * loading useEffect and can write `status: 'draft'` to a published post
+   * before the real status is read from Firestore.
+   */
+  const loadedRef = useRef(!initialPostId);
   const stateRef = useRef({
     title,
     slug,
     content,
     category,
     featured,
-    status,
+    savedStatus,
     postId,
     initialPostId,
   });
 
   useEffect(() => {
-    stateRef.current = { title, slug, content, category, featured, status, postId, initialPostId };
-  }, [title, slug, content, category, featured, status, postId, initialPostId]);
+    stateRef.current = { title, slug, content, category, featured, savedStatus, postId, initialPostId };
+  }, [title, slug, content, category, featured, savedStatus, postId, initialPostId]);
 
   useEffect(() => {
     void (async () => {
       const snap = await getDocs(collection(getFirebaseDb(), "categories"));
-      setCategories(snap.docs.map((d) => ({ id: d.id, name: String(d.data().name ?? "") })));
+      const nextCategories = snap.docs.map((d) => ({
+        id: d.id,
+        name: String(d.data().name ?? ""),
+        slug: String(d.data().slug ?? ""),
+      }));
+      setCategories(nextCategories.map(({ id, name }) => ({ id, name })));
+      setCategorySlugMap(
+        Object.fromEntries(nextCategories.map(({ id, slug }) => [id, slug])),
+      );
     })();
   }, []);
 
@@ -78,6 +112,8 @@ export function PostEditor({ postId: initialPostId }: { postId?: string }) {
       const d = await getDoc(doc(getFirebaseDb(), "posts", initialPostId));
       if (!d.exists()) {
         setLoading(false);
+        // Mark as loaded even on not-found so autosave won't be blocked.
+        loadedRef.current = true;
         setMessage("Post not found.");
         return;
       }
@@ -92,8 +128,14 @@ export function PostEditor({ postId: initialPostId }: { postId?: string }) {
         alt: String(data.featuredImage?.alt ?? ""),
         storagePath: String(data.featuredImage?.storagePath ?? ""),
       });
-      setStatus(data.status === "published" ? "published" : "draft");
+      const loadedStatus = data.status === "published" ? "published" : "draft";
+      setSavedStatus(loadedStatus);
+      // Update stateRef immediately so the autosave interval sees the correct
+      // status as soon as loading finishes — before the next React render cycle.
+      stateRef.current.savedStatus = loadedStatus;
       setLoading(false);
+      // Only allow autosave AFTER we have the real status from Firestore.
+      loadedRef.current = true;
     })();
   }, [initialPostId]);
 
@@ -168,8 +210,16 @@ export function PostEditor({ postId: initialPostId }: { postId?: string }) {
         }
 
         await setDoc(refDoc, payload, { merge: true });
+        const previous = existingSnap.data();
+        await revalidatePostViews({
+          slug: s.slug,
+          previousSlug: typeof previous?.slug === "string" ? previous.slug : undefined,
+          categorySlug: categorySlugMap[s.category],
+          previousCategorySlug:
+            typeof previous?.category === "string" ? categorySlugMap[previous.category] : undefined,
+        });
         if (!silent) setMessage(nextStatus === "published" ? "Published." : "Draft saved.");
-        setStatus(nextStatus);
+        setSavedStatus(nextStatus);
         if (!s.initialPostId) {
           router.replace(`/admin/posts/edit/${s.postId}`);
         }
@@ -183,15 +233,19 @@ export function PostEditor({ postId: initialPostId }: { postId?: string }) {
         setSaving(false);
       }
     },
-    [router],
+    [categorySlugMap, router],
   );
 
   useEffect(() => {
-    // Draft autosave should never demote a published post or overlap a manual save.
+    // Draft autosave should never:
+    //  1. Demote a published post (check savedStatus === "draft")
+    //  2. Fire before the post has loaded from Firestore (check loadedRef)
+    //  3. Overlap a manual save (check savingRef)
     const id = window.setInterval(() => {
       const s = stateRef.current;
+      if (!loadedRef.current) return; // post not fully loaded yet
       if (!s.title.trim()) return;
-      if (s.status !== "draft") return;
+      if (s.savedStatus !== "draft") return; // never demote a published post
       if (savingRef.current) return;
       void persist("draft", true);
     }, 30000);
@@ -215,6 +269,10 @@ export function PostEditor({ postId: initialPostId }: { postId?: string }) {
 
   async function onDelete() {
     try {
+      const db = getFirebaseDb();
+      const docRef = doc(db, "posts", postId);
+      const existingSnap = await getDoc(docRef);
+      const previous = existingSnap.data();
       if (featured.storagePath) {
         try {
           await deleteObject(ref(getFirebaseStorage(), featured.storagePath));
@@ -222,7 +280,12 @@ export function PostEditor({ postId: initialPostId }: { postId?: string }) {
           // ignore
         }
       }
-      await deleteDoc(doc(getFirebaseDb(), "posts", postId));
+      await deleteDoc(docRef);
+      await revalidatePostViews({
+        previousSlug: typeof previous?.slug === "string" ? previous.slug : undefined,
+        previousCategorySlug:
+          typeof previous?.category === "string" ? categorySlugMap[previous.category] : undefined,
+      });
       router.replace("/admin/posts");
     } catch (e) {
       console.error(e);
@@ -247,7 +310,7 @@ export function PostEditor({ postId: initialPostId }: { postId?: string }) {
             Save draft
           </Button>
           <Button type="button" disabled={saving} onClick={() => void persist("published")}>
-            {status === "published" ? "Update" : "Publish"}
+            {savedStatus === "published" ? "Update" : "Publish"}
           </Button>
           {initialPostId ? (
             <Button type="button" variant="danger" onClick={() => setConfirmOpen(true)}>
@@ -287,15 +350,13 @@ export function PostEditor({ postId: initialPostId }: { postId?: string }) {
             </select>
           </div>
           <div>
-            <label className="mb-1 block text-sm font-medium">Status</label>
-            <select
-              className={formSelectClass}
-              value={status}
-              onChange={(e) => setStatus(e.target.value as Status)}
-            >
-              <option value="draft">Draft</option>
-              <option value="published">Published</option>
-            </select>
+            <p className="mb-1 block text-sm font-medium">Current status</p>
+            <div className="rounded-lg border border-zinc-200 bg-zinc-50 px-3 py-2.5 text-sm text-zinc-700 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-200">
+              {savedStatus === "published" ? "Published" : "Draft"}
+            </div>
+            <p className="mt-2 text-xs text-zinc-500 dark:text-zinc-400">
+              Use “Save draft” or “Publish” to change the saved state explicitly.
+            </p>
           </div>
         </div>
         <FeaturedImageField postId={postId} value={featured} onChange={setFeatured} />

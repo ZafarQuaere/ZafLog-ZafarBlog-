@@ -36,6 +36,9 @@ Open [http://localhost:3000](http://localhost:3000). Admin: [http://localhost:30
 - `npm run build` — production build
 - `npm run start` — run production build locally
 - `npm run lint` — ESLint
+- `npm run repair:published-at` — dry-run repair for published posts missing `publishedAt`
+
+Run `npm run repair:published-at -- --write` to apply the one-time backfill using `FIREBASE_SERVICE_ACCOUNT_KEY` from `.env.local`.
 
 ## Deploy (Vercel)
 

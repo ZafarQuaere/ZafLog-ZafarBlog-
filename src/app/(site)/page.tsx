@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { connection } from "next/server";
 import { PostCard } from "@/components/blog/PostCard";
 import { CategoryBadge } from "@/components/blog/CategoryBadge";
 import { Pagination } from "@/components/common/Pagination";
@@ -16,17 +17,10 @@ export default async function HomePage({
 }: {
   searchParams: Promise<{ page?: string }>;
 }) {
+  await connection();
   const sp = await searchParams;
   const page = Math.max(0, Number(sp.page ?? "0") || 0);
-  
-  // Debug: Log what we're fetching
-  console.log("[HomePage] Fetching posts, page:", page, "Admin DB ready:", getAdminDb() !== null);
-  
   const { posts, total } = await getPublishedPostsPage({ pageSize: PAGE_SIZE, pageIndex: page });
-  
-  // Debug: Log what we got
-  console.log("[HomePage] Got posts:", posts.length, "total:", total);
-  
   const categories = await getAllCategories();
   const adminDbReady = getAdminDb() !== null;
   const categoryMap = new Map(categories.map((c) => [c.id, c]));

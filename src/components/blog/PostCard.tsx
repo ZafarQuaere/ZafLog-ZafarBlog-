@@ -16,6 +16,7 @@ export function PostCard({
 }) {
   const readTime = estimateReadTimeMinutes(post.content);
   const excerpt = post.excerpt || truncateText(post.content.replace(/```[\s\S]*?```/g, ""), 150);
+  const displayDate = post.publishedAt ?? post.updatedAt ?? post.createdAt;
 
   return (
     <article className="group flex flex-col overflow-hidden rounded-xl border border-zinc-200 bg-white shadow-sm transition hover:shadow-md dark:border-zinc-800 dark:bg-zinc-900">
@@ -36,7 +37,7 @@ export function PostCard({
         <div className="flex flex-wrap items-center gap-2">
           {category ? <CategoryBadge name={category.name} slug={category.slug} /> : null}
           <span className="text-xs text-zinc-500 dark:text-zinc-400">
-            {formatPostDate(post.publishedAt)} · {readTime} min read
+            {formatPostDate(displayDate)} · {readTime} min read
           </span>
         </div>
         <Link href={`/blog/${post.slug}`}>
