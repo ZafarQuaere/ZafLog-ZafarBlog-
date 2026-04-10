@@ -49,6 +49,7 @@ export function PostEditor({ postId: initialPostId }: { postId?: string }) {
   const [message, setMessage] = useState("");
   const [confirmOpen, setConfirmOpen] = useState(false);
   const inlineInputRef = useRef<HTMLInputElement>(null);
+  const savingRef = useRef(false);
   const stateRef = useRef({
     title,
     slug,
@@ -104,6 +105,9 @@ export function PostEditor({ postId: initialPostId }: { postId?: string }) {
   const persist = useCallback(
     async (nextStatus: Status, silent?: boolean) => {
       const s = stateRef.current;
+      if (savingRef.current) {
+        return false;
+      }
       if (!s.title.trim()) {
         if (!silent) setMessage("Title is required");
         return false;
@@ -121,19 +125,19 @@ export function PostEditor({ postId: initialPostId }: { postId?: string }) {
         return false;
       }
 
-      const db = getFirebaseDb();
-      const qslug = query(collection(db, "posts"), where("slug", "==", s.slug), limit(5));
-      const snap = await getDocs(qslug);
-      const conflict = snap.docs.some((d) => d.id !== s.postId);
-      if (conflict) {
-        if (!silent) setMessage("Slug already exists");
-        return false;
-      }
-
+      savingRef.current = true;
       setSaving(true);
       try {
-        const user = getFirebaseAuth().currentUser;
         const db = getFirebaseDb();
+        const qslug = query(collection(db, "posts"), where("slug", "==", s.slug), limit(5));
+        const snap = await getDocs(qslug);
+        const conflict = snap.docs.some((d) => d.id !== s.postId);
+        if (conflict) {
+          if (!silent) setMessage("Slug already exists");
+          return false;
+        }
+
+        const user = getFirebaseAuth().currentUser;
         const refDoc = doc(db, "posts", s.postId);
         const existingSnap = await getDoc(refDoc);
         const excerpt = excerptFromContent(s.content);
@@ -175,6 +179,7 @@ export function PostEditor({ postId: initialPostId }: { postId?: string }) {
         if (!silent) setMessage("Save failed.");
         return false;
       } finally {
+        savingRef.current = false;
         setSaving(false);
       }
     },
@@ -182,12 +187,13 @@ export function PostEditor({ postId: initialPostId }: { postId?: string }) {
   );
 
   useEffect(() => {
+    // Draft autosave should never demote a published post or overlap a manual save.
     const id = window.setInterval(() => {
-      void (async () => {
-        const s = stateRef.current;
-        if (!s.title.trim()) return;
-        await persist("draft", true);
-      })();
+      const s = stateRef.current;
+      if (!s.title.trim()) return;
+      if (s.status !== "draft") return;
+      if (savingRef.current) return;
+      void persist("draft", true);
     }, 30000);
     return () => window.clearInterval(id);
   }, [persist]);

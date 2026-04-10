@@ -7,6 +7,7 @@ function initAdminApp(): App | null {
   if (cachedApp !== undefined) return cachedApp;
   const raw = process.env.FIREBASE_SERVICE_ACCOUNT_KEY;
   if (!raw) {
+    console.error("[firebase-admin] FIREBASE_SERVICE_ACCOUNT_KEY is not set!");
     cachedApp = null;
     return null;
   }
@@ -14,11 +15,14 @@ function initAdminApp(): App | null {
     const json = JSON.parse(raw) as Record<string, unknown>;
     if (getApps().length) {
       cachedApp = getApps()[0]!;
+      console.log("[firebase-admin] Reusing existing app");
       return cachedApp;
     }
     cachedApp = initializeApp({ credential: cert(json as never) });
+    console.log("[firebase-admin] Initialized new app, project:", json.project_id);
     return cachedApp;
-  } catch {
+  } catch (e) {
+    console.error("[firebase-admin] Failed to initialize:", e);
     cachedApp = null;
     return null;
   }

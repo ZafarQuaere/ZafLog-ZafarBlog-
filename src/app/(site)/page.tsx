@@ -9,6 +9,7 @@ const PAGE_SIZE = 9;
 
 /** Always fetch fresh post lists so new publishes and edits show up without long ISR delays. */
 export const revalidate = 0;
+export const dynamic = "force-dynamic";
 
 export default async function HomePage({
   searchParams,
@@ -17,7 +18,15 @@ export default async function HomePage({
 }) {
   const sp = await searchParams;
   const page = Math.max(0, Number(sp.page ?? "0") || 0);
+  
+  // Debug: Log what we're fetching
+  console.log("[HomePage] Fetching posts, page:", page, "Admin DB ready:", getAdminDb() !== null);
+  
   const { posts, total } = await getPublishedPostsPage({ pageSize: PAGE_SIZE, pageIndex: page });
+  
+  // Debug: Log what we got
+  console.log("[HomePage] Got posts:", posts.length, "total:", total);
+  
   const categories = await getAllCategories();
   const adminDbReady = getAdminDb() !== null;
   const categoryMap = new Map(categories.map((c) => [c.id, c]));
